@@ -10,6 +10,11 @@ class Course {
     this.students = new MtList<Student>(); // Courses initially have no students taking it. `Not
                                            // sure`
   }
+  
+  // determines if the given student is in the list of students for this course
+  boolean containsStudent(Student s) {
+    return new InRoster(s).apply(this);
+  }
 }
 
 class Instructor {
@@ -54,25 +59,44 @@ interface IListVisitor<T, R> extends IFunc<T, R> {
   R forCons(ConsList<T> arg);
 }
 
-class InClassAs implements IListVisitor<Student, Boolean> {
-  Student s;
+class InClassAs implements IListVisitor<Course, Boolean> {
+  Student otherStudent;
   
-  InClassAs(Student s) {
-    this.s = s;
+  InClassAs(Student otherStudent) {
+    this.otherStudent = otherStudent;
   }
   
   public Boolean apply(Student arg) {
     return arg.courses.accept(this);
   }
   
-  public Boolean forMt(MtList<Student> arg) {
+  public Boolean forMt(MtList<Course> arg) {
     return false;
   }
   
-  public Boolean forCons(ConsList<Student> arg) {
-    return ;
+  public Boolean forCons(ConsList<Course> arg) {
+    return arg.first.containsStudent(this.otherStudent);
   }
+}
+
+class InRoster implements IListVisitor<Course, Boolean> {
+  Student target;
   
+  InRoster(Student target) {
+    this.target=target;
+  }
+
+  public Boolean apply(Course arg) {
+    return arg.students.accept(this);
+  }
+
+  public Boolean forMt(MtList<Course> arg) {
+    return false;
+  }
+
+  public Boolean forCons(ConsList<Course> arg) {
+    return arg.first.sameName(this.target) || new InRoster(this.target).apply(arg.rest);
+  }
 }
 
 interface IList<T> {
