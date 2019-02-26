@@ -44,8 +44,8 @@ class Student {
   }
 
   // Determines if the given student is in any of the same classes as THIS student
-  boolean classmates(Student c) {
-    return new IsClassmate(c).apply(this);
+  boolean classmates(Student target) {
+    return new IsClassmate(target).apply(this.courses);
   }
 }
 
@@ -62,14 +62,34 @@ interface IListVisitor<T, R> extends IFunc<T, R> {
 }
 
 class IsClassmate implements IPred<Student> {
-  Student otherStudent;
+  Student target;
   
-  IsClassmate(Student otherStudent) {
-    this.otherStudent = otherStudent;
+  IsClassmate(Student target) {
+    this.target = target;
+  }
+  
+  public Boolean apply(Student given) {
+    return new InClass(this.target).apply(given);
+  }
+}
+
+class InClass implements IListVisitor<Student, Boolean> {
+  Student target;
+  
+  InClass(Student target) {
+    this.target = target;
   }
   
   public Boolean apply(Student arg) {
-    return new InRoster(this.otherStudent).apply(arg);
+    return arg.courses.accept(this);
+  }
+
+  public Boolean forMt(MtList<Course> arg) {
+    return false;
+  }
+
+  public Boolean forCons(ConsList<Course> arg) {
+    return new InRoster(this.target).apply((Course) arg.first) || new InClass(this.target).apply(arg.rest); // casting
   }
 }
 
