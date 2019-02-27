@@ -6,17 +6,15 @@ class Course {
   IList<Student> students;
 
   Course(String name, Instructor prof) { // Courses must have an instructor.
-    prof.courses = new ConsList<Course>(this, prof.courses);
     this.name = name;
     this.prof = prof;
     this.students = new MtList<Student>();
+    prof.courses = new ConsList<Course>(this, prof.courses);
   }
 
   // Determines if the given student is in the list of students of this course.
   public boolean inThisCourse(Student target) {
     return new OneOfStudents(this.students, target).apply(target);
-    // OneOfStudents takes in two things. Seems like function objects usually only
-    // take in one... is this okay? !!!
   }
 }
 // Represents an instructor
@@ -32,12 +30,14 @@ class Instructor {
     this.courses = new MtList<Course>();
   }
 
-  // determines whether the given Student is in more than one of this Instructor’s
-  // Courses.
+  // determines whether the given Student is in more than
+  // one of THIS Instructor’s Courses.
   boolean dejavu(Student target) {
-    int coursesTaken = new MultipleCourses(this.courses, target).apply(null);
-    // null here... it doesn't actually use the Course that it's given.
+    int coursesTaken = new MultipleCourses(this.courses, target).apply(null); // !!!
+    // null here... it doesn't actually use the Course that it's given. !!!
     return coursesTaken > 1;
+    // Determines if the number of this instructor's courses
+    // the given Student takes is more than 1 (multiple).
   }
 }
 
@@ -60,12 +60,10 @@ class Student {
   void enroll(Course c) {
     c.students = new ConsList<Student>(this, c.students);
     this.courses = new ConsList<Course>(c, this.courses);
-    // ^^ Recently added this. When enrolled, the course should also appear in this
-    // student's list of courses, right?
   }
 
   // Determines if the given student is the same as
-  // this one by checking name id.
+  // this one by checking name and id.
   boolean sameStudent(Student target) {
     return this.name.equals(target.name) && this.id == target.id;
   }
@@ -160,6 +158,7 @@ class OneOfStudents implements IListVisitor<Student, Boolean> {
   }
 }
 
+// Determines how many of the instructor's courses the given student is enrolled in
 class MultipleCourses implements IListVisitor<Course, Integer> {
   IList<Course> profsCourses;
   Student target;
@@ -180,7 +179,6 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
 
   public Integer forCons(ConsList<Course> arg) {
     if (arg.first.inThisCourse(this.target)) {
-      // accessing so many fields here... this is so illegal
       return 1 + new MultipleCourses(arg.rest, this.target).apply(arg.first);
       // this arg.first is just here because the apply NEEDS a
       // course...otherwise it's never used.
