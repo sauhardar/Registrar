@@ -220,29 +220,46 @@ class MtList<T> implements IList<T> {
 
 // make sure to check constructors and similar stuff if necessary
 class ExamplesCourses {
-  // We refrained from using "this.(...)" in our void methods because
-  // doing so would mutate the overall/global examples at the top of this
-  // examples class. This way, we only refer to the examples within each
-  // method.
+  Instructor AMislove;
+  Instructor JHemann;
+  Instructor BLerner;
+  Instructor Moses;
+  Instructor CyberProf;
+  Course CS2500;
+  Course CS2510;
+  Course CS3500;
+  Course Linear;
+  Course Cyber;
+  Course CS3700;
+  Course Cyber2;
 
-  Instructor AMislove = new Instructor("Alan Mislove");
-  Instructor JHemann = new Instructor("Jason Hemann");
-  Instructor BLerner = new Instructor("Ben Lerner");
-  Instructor Moses = new Instructor("Moses");
-  Instructor CyberProf = new Instructor("CyberProf");
-  Course CS2500 = new Course("Fundamentals of Computer Science I", this.AMislove);
-  Course CS2510 = new Course("Fundamentals of Computer Science II", this.JHemann);
-  Course CS3500 = new Course("Object Oriented Design", this.BLerner);
-  Course Linear = new Course("Linear Mathematics", this.Moses);
-  Course Cyber = new Course("Cyber", this.CyberProf);
-  Course CS3700 = new Course("Algo", this.Moses);
-  Course Cyber2 = new Course("Cyber 2", this.CyberProf);
+  Student DWang;
+  Student SR;
+  Student Preston;
+  Student Ethan;
+  Student LiAnn;
 
-  Student DWang = new Student("Daniel Wang", 1);
-  Student SR = new Student("Sauharda Rajbhandari", 2);
-  Student Preston = new Student("Preston R", 3);
-  Student Ethan = new Student("Ethan P", 4);
-  Student LiAnn = new Student("LiAnn B", 5);
+  void reset() { // Resets all values to their original values
+    AMislove = new Instructor("Alan Mislove");
+    JHemann = new Instructor("Jason Hemann");
+    BLerner = new Instructor("Ben Lerner");
+    Moses = new Instructor("Moses");
+    CyberProf = new Instructor("CyberProf");
+    CS2500 = new Course("Fundamentals of Computer Science I", this.AMislove);
+    CS2510 = new Course("Fundamentals of Computer Science II", this.JHemann);
+    CS3500 = new Course("Object Oriented Design", this.BLerner);
+    Linear = new Course("Linear Mathematics", this.Moses);
+    Cyber = new Course("Cyber", this.CyberProf);
+    CS3700 = new Course("Algo", this.Moses);
+    Cyber2 = new Course("Cyber 2", this.CyberProf);
+
+    DWang = new Student("Daniel Wang", 1);
+    SR = new Student("Sauharda Rajbhandari", 2);
+    Preston = new Student("Preston R", 3);
+    Ethan = new Student("Ethan P", 4);
+    LiAnn = new Student("LiAnn B", 5);
+
+  }
 
   IList<Course> allCourses = new ConsList<Course>(this.CS2500,
       new ConsList<Course>(this.CS2510,
@@ -251,133 +268,95 @@ class ExamplesCourses {
                   new ConsList<Course>(this.CS3500, new MtList<Course>()))))));
 
   void testingEnroll(Tester t) {
-    Student DWang = new Student("Daniel Wang", 1);
-    Student Preston = new Student("Preston R", 3);
-
-    Course CS2500 = new Course("Fundamentals of Computer Science I", AMislove);
-    Course CS2510 = new Course("Fundamentals of Computer Science II", JHemann);
-    Course Linear = new Course("Linear Mathematics", Moses);
-
-    t.checkExpect(DWang.courses, new MtList<Course>());
-    DWang.enroll(Linear);
-    t.checkExpect(DWang.courses, new ConsList<Course>(Linear, new MtList<Course>()));
-    DWang.enroll(CS2500);
-    t.checkExpect(DWang.courses,
+    reset();
+    t.checkExpect(this.DWang.courses, new MtList<Course>());
+    this.DWang.enroll(Linear);
+    t.checkExpect(this.DWang.courses, new ConsList<Course>(Linear, new MtList<Course>()));
+    this.DWang.enroll(CS2500);
+    t.checkExpect(this.DWang.courses,
         new ConsList<Course>(CS2500, new ConsList<Course>(Linear, new MtList<Course>())));
-    t.checkExpect(Preston.courses, new MtList<Course>());
-    Preston.enroll(CS2510);
-    t.checkExpect(Preston.courses, new ConsList<Course>(CS2510, new MtList<Course>()));
-    Preston.enroll(CS2500);
-    t.checkExpect(Preston.courses,
+    t.checkExpect(this.Preston.courses, new MtList<Course>());
+    this.Preston.enroll(CS2510);
+    t.checkExpect(this.Preston.courses, new ConsList<Course>(CS2510, new MtList<Course>()));
+    this.Preston.enroll(CS2500);
+    t.checkExpect(this.Preston.courses,
         new ConsList<Course>(CS2500, new ConsList<Course>(CS2510, new MtList<Course>())));
   }
 
   boolean testingSameStudent(Tester t) {
-    return t.checkExpect(Preston.sameStudent(DWang), false)
-        && t.checkExpect(Preston.sameStudent(SR), false)
-        && t.checkExpect(Preston.sameStudent(LiAnn), false)
-        && t.checkExpect(Preston.sameStudent(Preston), true)
-        && t.checkExpect(DWang.sameStudent(Preston), false)
-        && t.checkExpect(SR.sameStudent(Preston), false)
-        && t.checkExpect(LiAnn.sameStudent(Preston), false)
-        && t.checkExpect(LiAnn.sameStudent(LiAnn), true);
+    reset();
+    return t.checkExpect(this.Preston.sameStudent(this.DWang), false)
+        && t.checkExpect(this.Preston.sameStudent(this.SR), false)
+        && t.checkExpect(this.Preston.sameStudent(this.LiAnn), false)
+        && t.checkExpect(this.Preston.sameStudent(this.Preston), true)
+        && t.checkExpect(this.DWang.sameStudent(this.Preston), false)
+        && t.checkExpect(this.SR.sameStudent(this.Preston), false)
+        && t.checkExpect(this.LiAnn.sameStudent(this.Preston), false)
+        && t.checkExpect(this.LiAnn.sameStudent(this.LiAnn), true);
   }
 
   void testingClassmates(Tester t) {
-    // constants used just for this test
-    Student DWang = new Student("Daniel Wang", 1);
-    Student SR = new Student("Sauharda Rajbhandari", 2);
-    Student Preston = new Student("Preston R", 3);
-    Student Ethan = new Student("Ethan P", 4);
-    Student LiAnn = new Student("LiAnn B", 5);
+    reset();
+    t.checkExpect(this.Preston.classmates(this.Ethan), false);
+    this.Preston.enroll(this.Cyber);
+    this.Ethan.enroll(this.Cyber);
+    t.checkExpect(this.Preston.classmates(this.Ethan), true);
+    t.checkExpect(this.Ethan.classmates(this.LiAnn), false);
+    this.LiAnn.enroll(this.CS2500);
+    this.DWang.enroll(this.CS2500);
+    this.SR.enroll(this.CS2500);
+    t.checkExpect(this.LiAnn.classmates(this.DWang), true);
+    t.checkExpect(this.DWang.classmates(this.SR), true);
+    t.checkExpect(this.SR.classmates(this.LiAnn), true);
+    t.checkExpect(this.LiAnn.classmates(this.SR), true);
+    t.checkExpect(this.SR.classmates(this.DWang), true);
+    t.checkExpect(this.DWang.classmates(this.LiAnn), true);
 
-    Course CS2500 = new Course("Fundamentals of Computer Science I", AMislove);
-    Course Linear = new Course("Linear Mathematics", Moses);
-    Course Cyber = new Course("Cyber", CyberProf);
-
-    t.checkExpect(Preston.classmates(Ethan), false);
-    Preston.enroll(Cyber);
-    Ethan.enroll(Cyber);
-    t.checkExpect(Preston.classmates(Ethan), true);
-    t.checkExpect(Ethan.classmates(LiAnn), false);
-    LiAnn.enroll(CS2500);
-    DWang.enroll(CS2500);
-    SR.enroll(CS2500);
-    t.checkExpect(LiAnn.classmates(DWang), true);
-    t.checkExpect(DWang.classmates(SR), true);
-    t.checkExpect(SR.classmates(LiAnn), true);
-    t.checkExpect(LiAnn.classmates(SR), true);
-    t.checkExpect(SR.classmates(DWang), true);
-    t.checkExpect(DWang.classmates(LiAnn), true);
-
-    t.checkExpect(DWang.classmates(Ethan), false);
-    Ethan.enroll(Linear);
-    DWang.enroll(Linear);
-    t.checkExpect(DWang.classmates(Ethan), true);
-    t.checkExpect(SR.classmates(Ethan), false);
-    t.checkExpect(LiAnn.classmates(Ethan), false);
+    t.checkExpect(this.DWang.classmates(this.Ethan), false);
+    this.Ethan.enroll(this.Linear);
+    this.DWang.enroll(this.Linear);
+    t.checkExpect(this.DWang.classmates(this.Ethan), true);
+    t.checkExpect(this.SR.classmates(this.Ethan), false);
+    t.checkExpect(this.LiAnn.classmates(this.Ethan), false);
   }
 
   void testingInThisCourse(Tester t) {
-    Student DWang = new Student("Daniel Wang", 1);
-    Student SR = new Student("Sauharda Rajbhandari", 2);
-    Student Preston = new Student("Preston R", 3);
-    Student Ethan = new Student("Ethan P", 4);
-    Student LiAnn = new Student("LiAnn B", 5);
+    reset();
 
-    Course CS2500 = new Course("Fundamentals of Computer Science I", AMislove);
-    Course CS2510 = new Course("Fundamentals of Computer Science II", JHemann);
-    Course CS3500 = new Course("Object Oriented Design", BLerner);
-    Course Linear = new Course("Linear Mathematics", Moses);
-    Course Cyber = new Course("Cyber", CyberProf);
-    Course CS3700 = new Course("Algo", Moses);
+    t.checkExpect(this.CS2500.inThisCourse(this.DWang), false);
+    t.checkExpect(this.CS2510.inThisCourse(this.SR), false);
+    t.checkExpect(this.CS3500.inThisCourse(this.Preston), false);
+    t.checkExpect(this.CS3700.inThisCourse(this.LiAnn), false);
 
-    t.checkExpect(CS2500.inThisCourse(DWang), false);
-    t.checkExpect(CS2510.inThisCourse(SR), false);
-    t.checkExpect(CS3500.inThisCourse(Preston), false);
-    t.checkExpect(CS3700.inThisCourse(LiAnn), false);
+    this.DWang.enroll(this.CS2500);
+    this.SR.enroll(this.CS2510);
+    this.Preston.enroll(this.CS3500);
+    this.LiAnn.enroll(this.CS3700);
 
-    DWang.enroll(CS2500);
-    SR.enroll(CS2510);
-    Preston.enroll(CS3500);
-    LiAnn.enroll(CS3700);
-
-    t.checkExpect(CS2500.inThisCourse(DWang), true);
-    t.checkExpect(CS2510.inThisCourse(SR), true);
-    t.checkExpect(CS3500.inThisCourse(Preston), true);
-    t.checkExpect(CS3700.inThisCourse(LiAnn), true);
-    t.checkExpect(Linear.inThisCourse(SR), false);
-    SR.enroll(Linear);
-    t.checkExpect(Linear.inThisCourse(SR), true);
+    t.checkExpect(this.CS2500.inThisCourse(this.DWang), true);
+    t.checkExpect(this.CS2510.inThisCourse(this.SR), true);
+    t.checkExpect(this.CS3500.inThisCourse(this.Preston), true);
+    t.checkExpect(this.CS3700.inThisCourse(this.LiAnn), true);
+    t.checkExpect(this.Linear.inThisCourse(this.SR), false);
+    this.SR.enroll(this.Linear);
+    t.checkExpect(this.Linear.inThisCourse(this.SR), true);
 
   }
 
   // tests dejavu
   void testingDejavuMethod(Tester t) {
-    Instructor AMislove = new Instructor("Alan Mislove");
-    Instructor Moses = new Instructor("Moses");
-    Instructor CyberProf = new Instructor("CyberProf");
-    Course Linear = new Course("Linear Mathematics", Moses);
-    Course CS3700 = new Course("Algo", Moses);
-    Course Cyber = new Course("Cyber", CyberProf);
-    Course Cyber2 = new Course("Cyber 2", CyberProf);
-
-    Student DWang = new Student("Daniel Wang", 1);
-    Student SR = new Student("Sauharda Rajbhandari", 2);
-    Student Preston = new Student("Preston R", 3);
-
-    DWang.enroll(Linear); // taught by moses.
-    DWang.enroll(CS3700); // taught by moses.
-    t.checkExpect(Moses.dejavu(DWang), true);
-    t.checkExpect(Moses.dejavu(SR), false);
-    t.checkExpect(Moses.dejavu(Preston), false);
-    t.checkExpect(AMislove.dejavu(DWang), false);
-    t.checkExpect(AMislove.dejavu(SR), false);
-    t.checkExpect(AMislove.dejavu(Preston), false);
-    Preston.enroll(Cyber);
-    t.checkExpect(CyberProf.dejavu(Preston), false);
-    Preston.enroll(Cyber2);
-    t.checkExpect(CyberProf.dejavu(Preston), true);
+    reset();
+    this.DWang.enroll(this.Linear); // taught by moses.
+    this.DWang.enroll(this.CS3700); // taught by moses.
+    t.checkExpect(this.Moses.dejavu(this.DWang), true);
+    t.checkExpect(this.Moses.dejavu(this.SR), false);
+    t.checkExpect(this.Moses.dejavu(this.Preston), false);
+    t.checkExpect(this.AMislove.dejavu(this.DWang), false);
+    t.checkExpect(this.AMislove.dejavu(this.SR), false);
+    t.checkExpect(this.AMislove.dejavu(this.Preston), false);
+    this.Preston.enroll(this.Cyber);
+    t.checkExpect(this.CyberProf.dejavu(this.Preston), false);
+    this.Preston.enroll(this.Cyber2);
+    t.checkExpect(this.CyberProf.dejavu(this.Preston), true);
   }
-
 }
