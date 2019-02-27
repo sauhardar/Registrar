@@ -1,3 +1,4 @@
+
 class Course {
   String name;
   Instructor prof;
@@ -10,7 +11,7 @@ class Course {
     this.students = new MtList<Student>(); // Courses initially have no students taking it. `Not
                                            // sure`
   }
-  
+
   // determines if the given student is in the list of students for this course
   boolean containsStudent(Student s) {
     return new InRoster(s).apply(this);
@@ -45,7 +46,7 @@ class Student {
 
   // Determines if the given student is in any of the same classes as THIS student
   boolean classmates(Student target) {
-    return new IsClassmate(target).apply(this.courses);
+    return new OrMap();
   }
 }
 
@@ -53,7 +54,8 @@ interface IFunc<A, R> {
   R apply(A arg);
 }
 
-interface IPred<X> extends IFunc<X, Boolean> { }
+interface IPred<X> extends IFunc<X, Boolean> {
+}
 
 interface IListVisitor<T, R> extends IFunc<T, R> {
   R forMt(MtList<T> arg);
@@ -61,55 +63,24 @@ interface IListVisitor<T, R> extends IFunc<T, R> {
   R forCons(ConsList<T> arg);
 }
 
-class IsClassmate implements IPred<Student> {
-  Student target;
-  
-  IsClassmate(Student target) {
-    this.target = target;
-  }
-  
-  public Boolean apply(Student given) {
-    return new InClass(this.target).apply(given);
-  }
-}
+//The generic OrMap that takes an IPred<X> to check against a list.
+class OrMap<T> implements IListVisitor<T, Boolean> {
+  IPred<T> predicate;
 
-class InClass implements IListVisitor<Student, Boolean> {
-  Student target;
-  
-  InClass(Student target) {
-    this.target = target;
-  }
-  
-  public Boolean apply(Student arg) {
-    return arg.courses.accept(this);
+  OrMap(IPred<T> predicate) {
+    this.predicate = predicate;
   }
 
-  public Boolean forMt(MtList<Course> arg) {
+  public Boolean apply(T arg) {
+    return arg.prereqs.accept(this);
+  }
+
+  public Boolean forMt(MtList<T> arg) {
     return false;
   }
 
-  public Boolean forCons(ConsList<Course> arg) {
-    return new InRoster(this.target).apply((Course) arg.first) || new InClass(this.target).apply(arg.rest); // casting
-  }
-}
-
-class InRoster implements IListVisitor<Course, Boolean> {
-  Student target;
-  
-  InRoster(Student target) {
-    this.target=target;
-  }
-
-  public Boolean apply(Course arg) {
-    return arg.students.accept(this);
-  }
-
-  public Boolean forMt(MtList<Course> arg) {
-    return false;
-  }
-
-  public Boolean forCons(ConsList<Course> arg) {
-    return arg.first.sameName(this.target) || new InRoster(this.target).apply(arg.rest);
+  public Boolean forCons(ConsList<T> arg) {
+    return this.predicate.apply(arg.first) || arg.rest.accept(this);
   }
 }
 
@@ -126,6 +97,7 @@ class ConsList<T> implements IList<T> {
     this.first = first;
     this.rest = rest;
   }
+
   public <R> R accept(IListVisitor<T, R> visitor) {
     return visitor.forCons(this);
   }
