@@ -1,15 +1,16 @@
 import tester.Tester;
 
+// Represents a single course
 class Course {
   String name;
   Instructor prof;
   IList<Student> students;
 
   Course(String name, Instructor prof) { // Courses must have an instructor.
-    prof.courses = new ConsList<Course>(this, prof.courses);
     this.name = name;
     this.prof = prof;
     this.students = new MtList<Student>();
+    prof.courses = new ConsList<Course>(this, prof.courses);
   }
 
   // Determines if the given student is in the list of students of this course.
@@ -29,11 +30,13 @@ class Instructor {
     this.courses = new MtList<Course>();
   }
 
-  // Determines if given Student is in more than one of this Instructor’s Courses.
+  // Is the given Student is in more than one of this Instructor’s Courses?
   boolean dejavu(Student target) {
-    int coursesTaken = new MultipleCourses(this.courses, target)
-        .apply(new Course("", new Instructor(""))); // Loophole b/c not used
+    int coursesTaken = new MultipleCourses(this.courses, target).apply(null);
+
     return coursesTaken > 1;
+    // Determines if the number of courses taken with THIS instructor
+    // is greater than 1.
   }
 }
 
@@ -58,8 +61,7 @@ class Student {
     this.courses = new ConsList<Course>(c, this.courses);
   }
 
-  // Determines if the given student is the same as
-  // this one by checking name id.
+  // Determines if the given student is the same as this one by checking name id.
   boolean sameStudent(Student target) {
     return this.name.equals(target.name) && this.id == target.id;
   }
@@ -70,13 +72,19 @@ class Student {
   }
 }
 
+// An interface that represents a function object
 interface IFunc<A, R> {
+  // Applies a function that goes from A->R
   R apply(A arg);
 }
 
+// An IListVisitor
 interface IListVisitor<T, R> extends IFunc<T, R> {
+
+  // Generic function for an MtList
   R forMt(MtList<T> arg);
 
+  // Generic function for a ConsList
   R forCons(ConsList<T> arg);
 }
 
@@ -93,7 +101,9 @@ class InCourses implements IPred<Student> {
   }
 
   // Dispatches to forMt or forCons with the function object InRoster depending on
-  // whether the main student's list of courses is empty or not empty.
+  // whether the main student's list of courses is empty or not empty. With the
+  // list, goes to InRoster
+  // to determine if the given student is within the given list of courses.
   public Boolean apply(Student arg) {
     return this.coursePool.accept(new InRoster(arg));
   }
@@ -107,9 +117,9 @@ class InRoster implements IListVisitor<Course, Boolean> {
     this.target = target;
   }
 
-  // Not being used... !!!
+  // Not required for this function object.
   public Boolean apply(Course arg) {
-    return null; // Have not used this... what to do here?
+    return null;
   }
 
   // If a list of courses is empty, a student is not in the list of course.
@@ -137,7 +147,6 @@ class OneOfStudents implements IListVisitor<Student, Boolean> {
   // Dispatches to forMt or forCons depending on whether the studentPool is empty
   public Boolean apply(Student arg) {
     return this.studentPool.accept(this);
-    // the student that is given to this method is not being used... !!!
   }
 
   // If the student pool is empty, obviously the given
@@ -153,6 +162,8 @@ class OneOfStudents implements IListVisitor<Student, Boolean> {
   }
 }
 
+// A function object that determines if a given Student is in a given list of 
+// Courses, which represents all the courses a particular Instructor teaches.
 class MultipleCourses implements IListVisitor<Course, Integer> {
   IList<Course> profsCourses;
   Student target;
@@ -161,21 +172,22 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
     this.profsCourses = profsCourses;
     this.target = target;
   }
-
+  
+  // Dispatches to either forMt or forCons depending on whether the
+  // list of courses is empty or not empty.
   public Integer apply(Course arg) {
     return this.profsCourses.accept(this);
   }
 
+  // The student is not in any of the courses because the list is empty.
   public Integer forMt(MtList<Course> arg) {
     return 0;
   }
 
+  // Increments for every course in the course pool that the student is taking
   public Integer forCons(ConsList<Course> arg) {
     if (arg.first.inThisCourse(this.target)) {
-      // accessing so many fields here... this is so illegal
-      return 1 + new MultipleCourses(arg.rest, this.target).apply(arg.first);
-      // this arg.first is just here because the apply NEEDS a
-      // course...otherwise it's never used.
+      return 1 + new MultipleCourses(arg.rest, this.target).apply(null);
     }
     else {
       return new MultipleCourses(arg.rest, this.target).apply(arg.first);
@@ -183,11 +195,13 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
   }
 }
 
+// An interface representing a general list.
 interface IList<T> {
   // Accepts a visitor and determines if the IList is Mt or Cons
   <R> R accept(IListVisitor<T, R> visitor);
 }
 
+// A class representing a non-empty list of courses
 class ConsList<T> implements IList<T> {
   T first;
   IList<T> rest;
@@ -197,19 +211,20 @@ class ConsList<T> implements IList<T> {
     this.rest = rest;
   }
 
+  // Applies the given visitor's forCons method on this non-empty list.
   public <R> R accept(IListVisitor<T, R> visitor) {
     return visitor.forCons(this);
   }
 }
 
+// A class representing an empt list of courses
 class MtList<T> implements IList<T> {
-
+  // Applies the given visitor's forCons method on this empty list.
   public <R> R accept(IListVisitor<T, R> visitor) {
     return visitor.forMt(this);
   }
 }
 
-// make sure to check constructors and similar stuff if necessary
 class ExamplesCourses {
   Instructor AMislove;
   Instructor JHemann;
@@ -262,7 +277,7 @@ class ExamplesCourses {
     reset();
     t.checkExpect(this.DWang.courses, new MtList<Course>());
     this.DWang.enroll(Linear);
-    t.checkExpect(this.DWang.courses, new ConsList<Course>(Linear, new MtList<Course>()));
+    t.checkExpect(this.DWang.courses, new ConsList<Course>(this.Linear, new MtList<Course>()));
     this.DWang.enroll(CS2500);
     t.checkExpect(this.DWang.courses,
         new ConsList<Course>(CS2500, new ConsList<Course>(Linear, new MtList<Course>())));
