@@ -57,8 +57,14 @@ class Student {
   // the course's roster to include THIS student, and updates THIS student's
   // list of courses to include the given course.
   void enroll(Course c) {
-    c.students = new ConsList<Student>(this, c.students);
-    this.courses = new ConsList<Course>(c, this.courses);
+    // If this student is not in the given course:
+    if (!new InRoster(this).apply(c)) {
+      c.students = new ConsList<Student>(this, c.students);
+      this.courses = new ConsList<Course>(c, this.courses);
+    }// HERE
+    else {
+      throw new IllegalArgumentException("Student is already enrolled" + "in this course!");
+    }
   }
 
   // Determines if the given student is the same as this one by checking name id.
@@ -172,7 +178,7 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
     this.profsCourses = profsCourses;
     this.target = target;
   }
-  
+
   // Dispatches to either forMt or forCons depending on whether the
   // list of courses is empty or not empty.
   public Integer apply(Course arg) {
@@ -277,6 +283,11 @@ class ExamplesCourses {
     reset();
     t.checkExpect(this.DWang.courses, new MtList<Course>());
     this.DWang.enroll(Linear);
+
+    // DANIEL: I added something to the enroll method where it first checks if the
+    // student is already in the given course and only enrolls the student then. IDK
+    // how to check this, can you do it? LINE 59.
+
     t.checkExpect(this.DWang.courses, new ConsList<Course>(this.Linear, new MtList<Course>()));
     this.DWang.enroll(CS2500);
     t.checkExpect(this.DWang.courses,
@@ -358,10 +369,10 @@ class ExamplesCourses {
     t.checkExpect(this.AMislove.dejavu(this.DWang), false);
     t.checkExpect(this.AMislove.dejavu(this.SR), false);
     t.checkExpect(this.AMislove.dejavu(this.Preston), false);
-    
+
     this.Preston.enroll(this.Cyber);
     t.checkExpect(this.CyberProf.dejavu(this.Preston), false);
-    
+
     this.Preston.enroll(this.Cyber2);
     t.checkExpect(this.CyberProf.dejavu(this.Preston), true);
   }
