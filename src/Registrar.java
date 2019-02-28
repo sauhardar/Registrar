@@ -340,7 +340,6 @@ class ExamplesCourses {
     t.checkExpect(this.Linear.inThisCourse(this.SR), false);
     this.SR.enroll(this.Linear);
     t.checkExpect(this.Linear.inThisCourse(this.SR), true);
-
   }
 
   // tests dejavu
