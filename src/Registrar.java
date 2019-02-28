@@ -57,14 +57,8 @@ class Student {
   // the course's roster to include THIS student, and updates THIS student's
   // list of courses to include the given course.
   void enroll(Course c) {
-    // If this student is not in the given course:
-    if (!new InRoster(this).apply(c)) {
-      c.students = new ConsList<Student>(this, c.students);
-      this.courses = new ConsList<Course>(c, this.courses);
-    }// HERE
-    else {
-      throw new IllegalArgumentException("Student is already enrolled" + "in this course!");
-    }
+    c.students = new ConsList<Student>(this, c.students);
+    this.courses = new ConsList<Course>(c, this.courses);
   }
 
   // Determines if the given student is the same as this one by checking name id.
@@ -168,7 +162,7 @@ class OneOfStudents implements IListVisitor<Student, Boolean> {
   }
 }
 
-// A function object that determines if a given Student is in a given list of 
+// A function object that determines if a given Student is in a given list of
 // Courses, which represents all the courses a particular Instructor teaches.
 class MultipleCourses implements IListVisitor<Course, Integer> {
   IList<Course> profsCourses;
@@ -283,10 +277,6 @@ class ExamplesCourses {
     reset();
     t.checkExpect(this.DWang.courses, new MtList<Course>());
     this.DWang.enroll(Linear);
-
-    // DANIEL: I added something to the enroll method where it first checks if the
-    // student is already in the given course and only enrolls the student then. IDK
-    // how to check this, can you do it? LINE 59.
 
     t.checkExpect(this.DWang.courses, new ConsList<Course>(this.Linear, new MtList<Course>()));
     this.DWang.enroll(CS2500);
