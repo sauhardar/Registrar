@@ -102,9 +102,7 @@ class InCourses implements IPred<Student> {
   }
 
 // Dispatches to forMt or forCons with the function object InRoster depending on
-// whether the main student's list of courses is empty or not empty. With the
-// list, goes to InRoster
-// to determine if the given student is within the given list of courses.
+// whether the main student's list of courses is empty or not empty.
   public Boolean apply(Student arg) {
     return new InRoster(arg).apply(this.coursePool);
   }
@@ -118,6 +116,8 @@ class InRoster implements IListVisitor<Course, Boolean> {
     this.target = target;
   }
 
+  // Dispatches to forMt or forCons with the function object InRoster depending on
+  // whether the main student's list of courses is empty or not empty.
   public Boolean apply(IList<Course> arg) {
     return arg.accept(this);
   }
@@ -127,14 +127,14 @@ class InRoster implements IListVisitor<Course, Boolean> {
     return false;
   }
 
-// For a non-empty list of courses, determines if the given student is in the
-// roster for the first course or in the rosters of the remaining courses.
+  // For a non-empty list of courses, determines if the given student is in the
+  // roster for the first course or in the rosters of the remaining courses.
   public Boolean forCons(ConsList<Course> arg) {
     return arg.first.inThisCourse(this.target) || arg.rest.accept(new InRoster(this.target));
   }
 }
 
-//A function object that determines if a given student is in the given pool of students.
+// A function object that determines if a given student is in the given pool of students.
 class OneOfStudents implements IListVisitor<Student, Boolean> {
 
   Student target;
@@ -143,26 +143,27 @@ class OneOfStudents implements IListVisitor<Student, Boolean> {
     this.target = target;
   }
 
-// Dispatches to forMt or forCons depending on whether the studentPool is empty
+  // Dispatches to forMt or forCons depending on whether the studentPool is empty
+  // within this function obejct
   public Boolean apply(IList<Student> arg) {
     return arg.accept(this);
   }
 
-// If the student pool is empty, obviously the given 
-// student is not a part of the list (it's empty!).
+  // If the student pool is empty, obviously the given
+  // student is not a part of the list (it's empty!).
   public Boolean forMt(MtList<Student> arg) {
     return false;
   }
 
-// Determines if the given student is the first
-// student in the student pool (list) OR the rest.
+  // Determines if the given student is the first
+  // student in the student pool (list) OR the rest.
   public Boolean forCons(ConsList<Student> arg) {
     return arg.first.sameStudent(target) || new OneOfStudents(target).apply(arg.rest);
   }
 }
 
-//A function object that determines if a given Student is in a given list of 
-//Courses, which represents all the courses a particular Instructor teaches.
+// A function object that determines if a given Student is in a given list of 
+// Courses, which represents all the courses one particular Instructor teaches.
 class MultipleCourses implements IListVisitor<Course, Integer> {
   Student target;
 
@@ -170,18 +171,18 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
     this.target = target;
   }
 
-// Dispatches to either forMt or forCons depending on whether the
-// list of courses is empty or not empty.
+  // Dispatches to either forMt or forCons depending on whether the
+  // list of courses is empty or not empty.
   public Integer apply(IList<Course> arg) {
     return arg.accept(this);
   }
 
-// The student is not in any of the courses because the list is empty.
+  // The student is not in any of the courses because the list is empty.
   public Integer forMt(MtList<Course> arg) {
     return 0;
   }
 
-// Increments for every course in the course pool that the student is taking
+  // Increments for every course in the course pool that the student is taking
   public Integer forCons(ConsList<Course> arg) {
     if (arg.first.inThisCourse(this.target)) {
       return 1 + new MultipleCourses(this.target).apply(arg.rest);
@@ -198,7 +199,7 @@ interface IList<T> {
   <R> R accept(IListVisitor<T, R> visitor);
 }
 
-//A class representing a non-empty list of courses
+// A class representing a non-empty list of courses
 class ConsList<T> implements IList<T> {
   T first;
   IList<T> rest;
@@ -208,13 +209,13 @@ class ConsList<T> implements IList<T> {
     this.rest = rest;
   }
 
-// Applies the given visitor's forCons method on this non-empty list.
+  // Applies the given visitor's forCons method on this non-empty list.
   public <R> R accept(IListVisitor<T, R> visitor) {
     return visitor.forCons(this);
   }
 }
 
-//A class representing an empty list of courses
+// A class representing an empty list of courses
 class MtList<T> implements IList<T> {
 // Applies the given visitor's forCons method on this empty list.
   public <R> R accept(IListVisitor<T, R> visitor) {
@@ -345,7 +346,7 @@ class ExamplesCourses {
     t.checkExpect(this.Linear.inThisCourse(this.SR), true);
   }
 
-// tests dejavu
+  // tests dejavu
   void testingDejavuMethod(Tester t) {
     reset();
     this.DWang.enroll(this.Linear); // taught by moses.
@@ -360,5 +361,123 @@ class ExamplesCourses {
     t.checkExpect(this.CyberProf.dejavu(this.Preston), false);
     this.Preston.enroll(this.Cyber2);
     t.checkExpect(this.CyberProf.dejavu(this.Preston), true);
+  }
+
+  // tests for InCourses function object
+  void testingInCourseClass(Tester t) {
+    reset();
+    InCourses emptyCourses = new InCourses(new MtList<Course>());
+    InCourses linearCS2510 = new InCourses(
+        new ConsList<Course>(this.Linear, new ConsList<Course>(this.CS2510, new MtList<Course>())));
+    InCourses cyberLinearCyber2 = new InCourses(
+        new ConsList<Course>(this.Cyber, new ConsList<Course>(this.Linear,
+            new ConsList<Course>(this.Cyber2, new MtList<Course>()))));
+
+    t.checkExpect(emptyCourses.apply(SR), false);
+    t.checkExpect(emptyCourses.apply(DWang), false);
+    t.checkExpect(emptyCourses.apply(LiAnn), false);
+    t.checkExpect(cyberLinearCyber2.apply(SR), false);
+    t.checkExpect(cyberLinearCyber2.apply(DWang), false);
+    t.checkExpect(cyberLinearCyber2.apply(LiAnn), false);
+
+    this.DWang.enroll(Linear);
+
+    t.checkExpect(linearCS2510.apply(this.DWang), true);
+    t.checkExpect(linearCS2510.apply(SR), false);
+
+    this.SR.enroll(this.Linear);
+    t.checkExpect(linearCS2510.apply(SR), true);
+    t.checkExpect(linearCS2510.apply(LiAnn), false);
+    this.LiAnn.enroll(this.CS2510);
+    t.checkExpect(linearCS2510.apply(this.LiAnn), true);
+  }
+
+  // tests for InRoster function object
+  void testingInRosterClass(Tester t) {
+    reset();
+    IList<Course> mt = new MtList<Course>();
+    IList<Course> linearCS2510 = new ConsList<Course>(this.Linear,
+        new ConsList<Course>(this.CS2510, new MtList<Course>()));
+    IList<Course> linearCyber2 = new ConsList<Course>(this.Linear,
+        new ConsList<Course>(this.Cyber2, new MtList<Course>()));
+    IList<Course> cyberLinearCyber2 = new ConsList<Course>(this.Cyber,
+        (new ConsList<Course>(this.Linear,
+            new ConsList<Course>(this.Cyber2, new MtList<Course>()))));
+
+    InRoster SR = new InRoster(this.SR);
+    InRoster DW = new InRoster(this.DWang);
+
+    t.checkExpect(SR.apply(mt), false);
+    t.checkExpect(DW.apply(mt), false);
+    this.SR.enroll(this.Cyber);
+    t.checkExpect(SR.apply(cyberLinearCyber2), true);
+    t.checkExpect(DW.apply(cyberLinearCyber2), false);
+    this.DWang.enroll(this.Cyber);
+    t.checkExpect(DW.apply(cyberLinearCyber2), true);
+
+    t.checkExpect(SR.forMt((MtList<Course>) mt), false);
+    t.checkExpect(DW.forMt((MtList<Course>) mt), false);
+
+    t.checkExpect(SR.forCons((ConsList<Course>) cyberLinearCyber2), true);
+    t.checkExpect(DW.forCons((ConsList<Course>) cyberLinearCyber2), true);
+
+    this.DWang.enroll(this.CS2510);
+    this.SR.enroll(this.CS2510);
+
+    t.checkExpect(SR.forCons((ConsList<Course>) linearCS2510), true);
+    t.checkExpect(DW.forCons((ConsList<Course>) linearCS2510), true);
+
+    t.checkExpect(SR.forCons((ConsList<Course>) linearCyber2), false);
+    t.checkExpect(DW.forCons((ConsList<Course>) linearCyber2), false);
+  }
+  
+  // tests for OneOfStudents function object
+  void testingOneOfStudentsMethod(Tester t) {
+    reset();
+    IList<Student> mt = new MtList<Student>();
+    IList<Student> Daniel = new ConsList<Student>(this.DWang, mt);
+    IList<Student> SrD = new ConsList<Student>(this.SR, Daniel);
+    IList<Student> LiAnnSrD = new ConsList<Student>(this.LiAnn, SrD);
+    
+    OneOfStudents DW = new OneOfStudents(this.DWang);
+    OneOfStudents SR = new OneOfStudents(this.SR);
+    OneOfStudents LiAnn = new OneOfStudents(this.LiAnn);
+    OneOfStudents Preston = new OneOfStudents(this.Preston);
+    OneOfStudents Ethan = new OneOfStudents(this.Ethan);
+    
+    t.checkExpect(DW.apply(mt), false);
+    t.checkExpect(SR.apply(mt), false);
+    t.checkExpect(LiAnn.apply(mt), false);
+    t.checkExpect(Preston.apply(mt), false);
+    t.checkExpect(Ethan.apply(mt), false);
+    
+    t.checkExpect(Ethan.apply(LiAnnSrD), false);
+    t.checkExpect(Preston.apply(LiAnnSrD), false);
+    t.checkExpect(DW.apply(LiAnnSrD), true);
+    t.checkExpect(SR.apply(LiAnnSrD), true);
+    t.checkExpect(LiAnn.apply(LiAnnSrD), true);
+    
+    t.checkExpect(LiAnn.forMt((MtList<Student>)mt), false);
+    t.checkExpect(Preston.forMt((MtList<Student>)mt), false);
+    t.checkExpect(Ethan.forMt((MtList<Student>)mt), false);
+    
+    t.checkExpect(Ethan.forCons((ConsList<Student>)LiAnnSrD), false);
+    t.checkExpect(Preston.forCons((ConsList<Student>)LiAnnSrD), false);
+    t.checkExpect(DW.forCons((ConsList<Student>)LiAnnSrD), true);
+    t.checkExpect(SR.forCons((ConsList<Student>)LiAnnSrD), true);
+    t.checkExpect(LiAnn.forCons((ConsList<Student>)LiAnnSrD), true);
+    t.checkExpect(DW.forCons((ConsList<Student>)Daniel), true);
+    t.checkExpect(SR.forCons((ConsList<Student>)Daniel), false); 
+  }
+  // tests for MultipleCourses function object
+  void testingMultipleCoursesClass(Tester t) {
+    reset();
+    MultipleCourses DW = new MultipleCourses(this.DWang);
+    MultipleCourses SR = new MultipleCourses(this.SR);
+    MultipleCourses LiAnn = new MultipleCourses(this.LiAnn);
+    MultipleCourses Preston = new MultipleCourses(this.Preston);
+    MultipleCourses Ethan = new MultipleCourses(this.Ethan);
+    
+    
   }
 }
