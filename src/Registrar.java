@@ -15,8 +15,6 @@ class Course {
   // Determines if the given student is in the list of students of this course.
   public boolean inThisCourse(Student target) {
     return new OneOfStudents(this.students, target).apply(target);
-    // OneOfStudents takes in two things. Seems like function objects usually only
-    // take in one... is this okay? !!!
   }
 }
 // Represents an instructor
@@ -25,18 +23,16 @@ class Instructor {
   String name;
   IList<Course> courses;
 
-  // An Instructor starts with a list of no courses—initially not
-  // teaching any courses until assigned to them.
+  // An Instructor starts with a no courses (empty list)
   Instructor(String name) {
     this.name = name;
     this.courses = new MtList<Course>();
   }
 
-  // determines whether the given Student is in more than one of this Instructor’s
-  // Courses.
+  // Determines if given Student is in more than one of this Instructor’s Courses.
   boolean dejavu(Student target) {
-    int coursesTaken = new MultipleCourses(this.courses, target).apply(new Course("", new Instructor("")));
-    // null here... it doesn't actually use the Course that it's given.
+    int coursesTaken = new MultipleCourses(this.courses, target)
+        .apply(new Course("", new Instructor(""))); // Loophole b/c not used
     return coursesTaken > 1;
   }
 }
@@ -60,8 +56,6 @@ class Student {
   void enroll(Course c) {
     c.students = new ConsList<Student>(this, c.students);
     this.courses = new ConsList<Course>(c, this.courses);
-    // ^^ Recently added this. When enrolled, the course should also appear in this
-    // student's list of courses, right?
   }
 
   // Determines if the given student is the same as
@@ -70,8 +64,7 @@ class Student {
     return this.name.equals(target.name) && this.id == target.id;
   }
 
-  // Determines if the given student (target) is in any of the same courses as
-  // THIS one
+  // Determines if the given student is in any of the same courses as THIS one
   boolean classmates(Student target) {
     return new InCourses(this.courses).apply(target);
   }
@@ -169,7 +162,6 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
     this.target = target;
   }
 
-  // are these supposed to return int?
   public Integer apply(Course arg) {
     return this.profsCourses.accept(this);
   }
@@ -189,7 +181,6 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
       return new MultipleCourses(arg.rest, this.target).apply(arg.first);
     }
   }
-
 }
 
 interface IList<T> {
@@ -267,7 +258,7 @@ class ExamplesCourses {
               new ConsList<Course>(this.Cyber, new ConsList<Course>(this.CS3700,
                   new ConsList<Course>(this.CS3500, new MtList<Course>()))))));
 
-  void testingEnroll(Tester t) {
+  void testEnroll(Tester t) {
     reset();
     t.checkExpect(this.DWang.courses, new MtList<Course>());
     this.DWang.enroll(Linear);
@@ -283,7 +274,7 @@ class ExamplesCourses {
         new ConsList<Course>(CS2500, new ConsList<Course>(CS2510, new MtList<Course>())));
   }
 
-  boolean testingSameStudent(Tester t) {
+  boolean testSameStudent(Tester t) {
     reset();
     return t.checkExpect(this.Preston.sameStudent(this.DWang), false)
         && t.checkExpect(this.Preston.sameStudent(this.SR), false)
@@ -295,7 +286,7 @@ class ExamplesCourses {
         && t.checkExpect(this.LiAnn.sameStudent(this.LiAnn), true);
   }
 
-  void testingClassmates(Tester t) {
+  void testClassmates(Tester t) {
     reset();
     t.checkExpect(this.Preston.classmates(this.Ethan), false);
     this.Preston.enroll(this.Cyber);
@@ -320,7 +311,7 @@ class ExamplesCourses {
     t.checkExpect(this.LiAnn.classmates(this.Ethan), false);
   }
 
-  void testingInThisCourse(Tester t) {
+  void testInThisCourse(Tester t) {
     reset();
 
     t.checkExpect(this.CS2500.inThisCourse(this.DWang), false);
@@ -343,7 +334,7 @@ class ExamplesCourses {
   }
 
   // tests dejavu
-  void testingDejavuMethod(Tester t) {
+  void testDejavu(Tester t) {
     reset();
     this.DWang.enroll(this.Linear); // taught by moses.
     this.DWang.enroll(this.CS3700); // taught by moses.
@@ -357,5 +348,27 @@ class ExamplesCourses {
     t.checkExpect(this.CyberProf.dejavu(this.Preston), false);
     this.Preston.enroll(this.Cyber2);
     t.checkExpect(this.CyberProf.dejavu(this.Preston), true);
+  }
+
+  void testApply(Tester t) {
+    reset();
+    this.DWang.enroll(this.Linear); // taught by moses.
+    this.DWang.enroll(this.CS3700); // taught by moses.
+    t.checkExpect(new MultipleCourses(this.Moses.courses, this.DWang).apply(null), 2);
+    t.checkExpect(new MultipleCourses(this.Moses.courses, this.SR).apply(null), 0);
+  }
+
+  void testForMt(Tester t) {
+    reset();
+    t.checkExpect(new MultipleCourses(new MtList<Course>(), this.DWang).forMt(new MtList<Course>()),
+        0);
+  }
+
+  void testForCons(Tester t) {
+    reset();
+    this.DWang.enroll(this.Linear); // taught by moses.
+    this.DWang.enroll(this.CS3700); // taught by moses.
+    t.checkExpect(new MultipleCourses(this.Moses.courses, this.DWang)
+        .forCons((ConsList<Course>) this.Moses.courses), 2);
   }
 }
