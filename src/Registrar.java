@@ -13,7 +13,7 @@ class Course {
     prof.courses = new ConsList<Course>(this, prof.courses);
   }
 
-// Determines if the given student is in the list of students of this course.
+  // Determines if the given student is in the list of students of this course.
   public boolean inThisCourse(Student target) {
     return new OneOfStudents(target).apply(this.students);
   }
@@ -24,14 +24,14 @@ class Instructor {
   String name;
   IList<Course> courses;
 
-// An Instructor starts with a list of no courses—initially not
-// teaching any courses until assigned to them.
+  // An Instructor starts with a list of no courses—initially not
+  // teaching any courses until assigned to them.
   Instructor(String name) {
     this.name = name;
     this.courses = new MtList<Course>();
   }
 
-// Is the given Student is in more than one of this Instructor’s Courses?
+  // Is the given Student is in more than one of this Instructor’s Courses?
   boolean dejavu(Student target) {
     int coursesTaken = new MultipleCourses(target).apply(this.courses);
     return coursesTaken > 1;
@@ -46,28 +46,28 @@ class Student {
   int id;
   IList<Course> courses;
 
-// Initially, a student is taking no courses until enrolled in one or more.
+  // Initially, a student is taking no courses until enrolled in one or more.
   Student(String name, int id) {
     this.name = name;
     this.id = id;
     this.courses = new MtList<Course>();
   }
 
-// Enrolls this student in the list of students for the given course. Updates
-// the course's roster to include THIS student, and updates THIS student's
-// list of courses to include the given course.
+  // Enrolls this student in the list of students for the given course. Updates
+  // the course's roster to include THIS student, and updates THIS student's
+  // list of courses to include the given course.
   void enroll(Course c) {
     c.students = new ConsList<Student>(this, c.students);
     this.courses = new ConsList<Course>(c, this.courses);
   }
 
-// Determines if the given student is the same as this one by checking name id.
+  // Determines if the given student is the same as this one by checking name id.
   boolean sameStudent(Student target) {
     return this.name.equals(target.name) && this.id == target.id;
   }
 
-// Determines if the given student (target) is in any of the same courses as
-// THIS one
+  // Determines if the given student (target) is in any of the same courses as
+  // THIS one
   boolean classmates(Student target) {
     return new InCourses(this.courses).apply(target);
   }
@@ -75,17 +75,17 @@ class Student {
 
 //An interface that represents a function object
 interface IFunc<A, R> {
-// Applies a function that goes from A->R
+  // Applies a function that goes from A->R
   R apply(A arg);
 }
 
 //An IListVisitor
 interface IListVisitor<T, R> extends IFunc<IList<T>, R> {
 
-// Generic function for an MtList
+  // Generic function for an MtList
   R forMt(MtList<T> arg);
 
-// Generic function for a ConsList
+  // Generic function for a ConsList
   R forCons(ConsList<T> arg);
 }
 
@@ -101,8 +101,8 @@ class InCourses implements IPred<Student> {
     this.coursePool = coursePool;
   }
 
-// Dispatches to forMt or forCons with the function object InRoster depending on
-// whether the main student's list of courses is empty or not empty.
+  // Dispatches to forMt or forCons with the function object InRoster depending on
+  // whether the main student's list of courses is empty or not empty.
   public Boolean apply(Student arg) {
     return new InRoster(arg).apply(this.coursePool);
   }
@@ -122,7 +122,7 @@ class InRoster implements IListVisitor<Course, Boolean> {
     return arg.accept(this);
   }
 
-// If a list of courses is empty, a student is not in the list of course.
+  // If a list of courses is empty, a student is not in the list of course.
   public Boolean forMt(MtList<Course> arg) {
     return false;
   }
@@ -195,7 +195,7 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
 
 //An interface representing a general list.
 interface IList<T> {
-// Accepts a visitor and determines if the IList is Mt or Cons
+  // Accepts a visitor and determines if the IList is Mt or Cons
   <R> R accept(IListVisitor<T, R> visitor);
 }
 
@@ -217,7 +217,7 @@ class ConsList<T> implements IList<T> {
 
 // A class representing an empty list of courses
 class MtList<T> implements IList<T> {
-// Applies the given visitor's forCons method on this empty list.
+  // Applies the given visitor's forCons method on this empty list.
   public <R> R accept(IListVisitor<T, R> visitor) {
     return visitor.forMt(this);
   }
