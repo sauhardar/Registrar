@@ -15,7 +15,7 @@ class Course {
 
   // Determines if the given student is in the list of students of this course.
   public boolean inThisCourse(Student target) {
-    return new OneOfStudents(this.students, target).apply(target);
+    return new OneOfStudents(target).apply(this.students);
   }
 }
 // Represents an instructor
@@ -33,7 +33,7 @@ class Instructor {
 
   // Is the given Student is in more than one of this Instructor’s Courses?
   boolean dejavu(Student target) {
-    int coursesTaken = new MultipleCourses(this.courses, target).apply(null);
+    int coursesTaken = new MultipleCourses(target).apply(this.courses);
     return coursesTaken > 1;
     // Determines if the number of courses taken with THIS instructor
     // is greater than 1.
@@ -80,7 +80,7 @@ interface IFunc<A, R> {
 }
 
 // An IListVisitor
-interface IListVisitor<T, R> extends IFunc<T, R> {
+interface IListVisitor<T, R> extends IFunc<IList<T>, R> {
 
   // Generic function for an MtList
   R forMt(MtList<T> arg);
@@ -106,7 +106,7 @@ class InCourses implements IPred<Student> {
   // list, goes to InRoster
   // to determine if the given student is within the given list of courses.
   public Boolean apply(Student arg) {
-    return this.coursePool.accept(new InRoster(arg));
+    return new InRoster(arg).apply(this.coursePool);
   }
 }
 
@@ -117,12 +117,11 @@ class InRoster implements IListVisitor<Course, Boolean> {
   InRoster(Student target) {
     this.target = target;
   }
-
-  // Not required for this function object.
-  public Boolean apply(Course arg) {
-    return null;
+  
+  public Boolean apply(IList<Course> arg) {
+    return arg.accept(this);
   }
-
+  
   // If a list of courses is empty, a student is not in the list of course.
   public Boolean forMt(MtList<Course> arg) {
     return false;
@@ -137,20 +136,19 @@ class InRoster implements IListVisitor<Course, Boolean> {
 
 // A function object that determines if a given student is in the given pool of students.
 class OneOfStudents implements IListVisitor<Student, Boolean> {
-  IList<Student> studentPool;
+
   Student target;
 
-  OneOfStudents(IList<Student> studentPool, Student target) {
-    this.studentPool = studentPool;
+  OneOfStudents(Student target) {
     this.target = target;
   }
 
   // Dispatches to forMt or forCons depending on whether the studentPool is empty
-  public Boolean apply(Student arg) {
-    return this.studentPool.accept(this);
+  public Boolean apply(IList<Student> arg) {
+    return arg.accept(this);
   }
-
-  // If the student pool is empty, obviously the given
+  
+  // If the student pool is empty, obviously the given 
   // student is not a part of the list (it's empty!).
   public Boolean forMt(MtList<Student> arg) {
     return false;
@@ -159,27 +157,25 @@ class OneOfStudents implements IListVisitor<Student, Boolean> {
   // Determines if the given student is the first
   // student in the student pool (list) OR the rest.
   public Boolean forCons(ConsList<Student> arg) {
-    return arg.first.sameStudent(target) || new OneOfStudents(arg.rest, target).apply(target);
+    return arg.first.sameStudent(target) || new OneOfStudents(target).apply(arg.rest);
   }
 }
 
 // A function object that determines if a given Student is in a given list of 
 // Courses, which represents all the courses a particular Instructor teaches.
 class MultipleCourses implements IListVisitor<Course, Integer> {
-  IList<Course> profsCourses;
   Student target;
 
-  MultipleCourses(IList<Course> profsCourses, Student target) {
-    this.profsCourses = profsCourses;
+  MultipleCourses(Student target) {
     this.target = target;
   }
 
   // Dispatches to either forMt or forCons depending on whether the
   // list of courses is empty or not empty.
-  public Integer apply(Course arg) {
-    return this.profsCourses.accept(this);
+  public Integer apply(IList<Course> arg) {
+    return arg.accept(this);
   }
-
+  
   // The student is not in any of the courses because the list is empty.
   public Integer forMt(MtList<Course> arg) {
     return 0;
@@ -188,13 +184,12 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
   // Increments for every course in the course pool that the student is taking
   public Integer forCons(ConsList<Course> arg) {
     if (arg.first.inThisCourse(this.target)) {
-      return 1 + new MultipleCourses(arg.rest, this.target).apply(null);
+      return 1 + new MultipleCourses(this.target).apply(arg.rest);
     }
     else {
-      return new MultipleCourses(arg.rest, this.target).apply(arg.first);
+      return new MultipleCourses(this.target).apply(arg.rest);
     }
   }
-
 }
 
 // An interface representing a general list.
@@ -219,7 +214,7 @@ class ConsList<T> implements IList<T> {
   }
 }
 
-// A class representing an empt list of courses
+// A class representing an empty list of courses
 class MtList<T> implements IList<T> {
   // Applies the given visitor's forCons method on this empty list.
   public <R> R accept(IListVisitor<T, R> visitor) {
