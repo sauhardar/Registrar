@@ -162,7 +162,7 @@ class OneOfStudents implements IListVisitor<Student, Boolean> {
   }
 }
 
-// A function object that determines if a given Student is in a given list of 
+// A function object that determines if a given Student is in a given list of
 // Courses, which represents all the courses one particular Instructor teaches.
 class MultipleCourses implements IListVisitor<Course, Integer> {
   Student target;
@@ -430,7 +430,7 @@ class ExamplesCourses {
     t.checkExpect(SR.forCons((ConsList<Course>) linearCyber2), false);
     t.checkExpect(DW.forCons((ConsList<Course>) linearCyber2), false);
   }
-  
+
   // tests for OneOfStudents function object
   void testingOneOfStudentsMethod(Tester t) {
     reset();
@@ -438,46 +438,76 @@ class ExamplesCourses {
     IList<Student> Daniel = new ConsList<Student>(this.DWang, mt);
     IList<Student> SrD = new ConsList<Student>(this.SR, Daniel);
     IList<Student> LiAnnSrD = new ConsList<Student>(this.LiAnn, SrD);
-    
+
     OneOfStudents DW = new OneOfStudents(this.DWang);
     OneOfStudents SR = new OneOfStudents(this.SR);
     OneOfStudents LiAnn = new OneOfStudents(this.LiAnn);
     OneOfStudents Preston = new OneOfStudents(this.Preston);
     OneOfStudents Ethan = new OneOfStudents(this.Ethan);
-    
+
     t.checkExpect(DW.apply(mt), false);
     t.checkExpect(SR.apply(mt), false);
     t.checkExpect(LiAnn.apply(mt), false);
     t.checkExpect(Preston.apply(mt), false);
     t.checkExpect(Ethan.apply(mt), false);
-    
+
     t.checkExpect(Ethan.apply(LiAnnSrD), false);
     t.checkExpect(Preston.apply(LiAnnSrD), false);
     t.checkExpect(DW.apply(LiAnnSrD), true);
     t.checkExpect(SR.apply(LiAnnSrD), true);
     t.checkExpect(LiAnn.apply(LiAnnSrD), true);
-    
-    t.checkExpect(LiAnn.forMt((MtList<Student>)mt), false);
-    t.checkExpect(Preston.forMt((MtList<Student>)mt), false);
-    t.checkExpect(Ethan.forMt((MtList<Student>)mt), false);
-    
-    t.checkExpect(Ethan.forCons((ConsList<Student>)LiAnnSrD), false);
-    t.checkExpect(Preston.forCons((ConsList<Student>)LiAnnSrD), false);
-    t.checkExpect(DW.forCons((ConsList<Student>)LiAnnSrD), true);
-    t.checkExpect(SR.forCons((ConsList<Student>)LiAnnSrD), true);
-    t.checkExpect(LiAnn.forCons((ConsList<Student>)LiAnnSrD), true);
-    t.checkExpect(DW.forCons((ConsList<Student>)Daniel), true);
-    t.checkExpect(SR.forCons((ConsList<Student>)Daniel), false); 
+
+    t.checkExpect(LiAnn.forMt((MtList<Student>) mt), false);
+    t.checkExpect(Preston.forMt((MtList<Student>) mt), false);
+    t.checkExpect(Ethan.forMt((MtList<Student>) mt), false);
+
+    t.checkExpect(Ethan.forCons((ConsList<Student>) LiAnnSrD), false);
+    t.checkExpect(Preston.forCons((ConsList<Student>) LiAnnSrD), false);
+    t.checkExpect(DW.forCons((ConsList<Student>) LiAnnSrD), true);
+    t.checkExpect(SR.forCons((ConsList<Student>) LiAnnSrD), true);
+    t.checkExpect(LiAnn.forCons((ConsList<Student>) LiAnnSrD), true);
+    t.checkExpect(DW.forCons((ConsList<Student>) Daniel), true);
+    t.checkExpect(SR.forCons((ConsList<Student>) Daniel), false);
   }
+
   // tests for MultipleCourses function object
   void testingMultipleCoursesClass(Tester t) {
     reset();
-    MultipleCourses DW = new MultipleCourses(this.DWang);
-    MultipleCourses SR = new MultipleCourses(this.SR);
-    MultipleCourses LiAnn = new MultipleCourses(this.LiAnn);
-    MultipleCourses Preston = new MultipleCourses(this.Preston);
-    MultipleCourses Ethan = new MultipleCourses(this.Ethan);
-    
-    
+    MtList<Course> mtCourses = new MtList<Course>();
+    ConsList<Course> mosesCourses = new ConsList<Course>(this.Linear,
+        new ConsList<Course>(this.CS3700, new MtList<Course>()));
+
+    MultipleCourses targetDWang = new MultipleCourses(this.DWang);
+    MultipleCourses targetSR = new MultipleCourses(this.SR);
+    MultipleCourses targetLiAnn = new MultipleCourses(this.LiAnn);
+    MultipleCourses targetPreston = new MultipleCourses(this.Preston);
+    MultipleCourses targetEthan = new MultipleCourses(this.Ethan);
+
+    t.checkExpect(targetDWang.apply(mtCourses), 0);
+    t.checkExpect(targetSR.apply(mtCourses), 0);
+    t.checkExpect(targetLiAnn.apply(mtCourses), 0);
+    t.checkExpect(targetPreston.apply(mtCourses), 0);
+    t.checkExpect(targetEthan.apply(mtCourses), 0);
+
+    this.DWang.enroll(this.Linear);
+    this.DWang.enroll(this.CS3700);
+
+    t.checkExpect(targetDWang.apply(mosesCourses), 2);
+    t.checkExpect(targetSR.apply(mosesCourses), 0);
+    t.checkExpect(targetLiAnn.apply(mosesCourses), 0);
+    t.checkExpect(targetPreston.apply(mosesCourses), 0);
+    t.checkExpect(targetEthan.apply(mosesCourses), 0);
+
+    t.checkExpect(targetDWang.forMt(mtCourses), 0);
+    t.checkExpect(targetSR.forMt(mtCourses), 0);
+    t.checkExpect(targetLiAnn.forMt(mtCourses), 0);
+    t.checkExpect(targetPreston.forMt(mtCourses), 0);
+    t.checkExpect(targetEthan.forMt(mtCourses), 0);
+
+    t.checkExpect(targetDWang.forCons(mosesCourses), 2);
+    t.checkExpect(targetSR.forCons(mosesCourses), 0);
+    t.checkExpect(targetLiAnn.forCons(mosesCourses), 0);
+    t.checkExpect(targetPreston.forCons(mosesCourses), 0);
+    t.checkExpect(targetEthan.forCons(mosesCourses), 0);
   }
 }
