@@ -280,13 +280,13 @@ class ExamplesCourses {
     t.checkExpect(this.DWang.courses, new ConsList<Course>(this.Linear, new MtList<Course>()));
     this.DWang.enroll(CS2500);
     t.checkExpect(this.DWang.courses,
-        new ConsList<Course>(CS2500, new ConsList<Course>(Linear, new MtList<Course>())));
+        new ConsList<Course>(CS2500, new ConsList<Course>(this.Linear, new MtList<Course>())));
     t.checkExpect(this.Preston.courses, new MtList<Course>());
     this.Preston.enroll(CS2510);
-    t.checkExpect(this.Preston.courses, new ConsList<Course>(CS2510, new MtList<Course>()));
+    t.checkExpect(this.Preston.courses, new ConsList<Course>(this.CS2510, new MtList<Course>()));
     this.Preston.enroll(CS2500);
     t.checkExpect(this.Preston.courses,
-        new ConsList<Course>(CS2500, new ConsList<Course>(CS2510, new MtList<Course>())));
+        new ConsList<Course>(this.CS2500, new ConsList<Course>(this.CS2510, new MtList<Course>())));
   }
 
   boolean testSameStudent(Tester t) {
@@ -348,7 +348,6 @@ class ExamplesCourses {
     t.checkExpect(this.Linear.inThisCourse(this.SR), true);
   }
 
-  // tests dejavu
   void testDejavu(Tester t) {
     reset();
     this.DWang.enroll(this.Linear); // taught by moses.
@@ -359,8 +358,10 @@ class ExamplesCourses {
     t.checkExpect(this.AMislove.dejavu(this.DWang), false);
     t.checkExpect(this.AMislove.dejavu(this.SR), false);
     t.checkExpect(this.AMislove.dejavu(this.Preston), false);
+    
     this.Preston.enroll(this.Cyber);
     t.checkExpect(this.CyberProf.dejavu(this.Preston), false);
+    
     this.Preston.enroll(this.Cyber2);
     t.checkExpect(this.CyberProf.dejavu(this.Preston), true);
   }
