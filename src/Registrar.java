@@ -24,8 +24,7 @@ class Instructor {
   String name;
   IList<Course> courses;
 
-  // An Instructor starts with a list of no courses—initially not
-  // teaching any courses until assigned to them.
+  // An Instructor starts with a no courses (empty list)
   Instructor(String name) {
     this.name = name;
     this.courses = new MtList<Course>();
@@ -34,6 +33,7 @@ class Instructor {
   // Is the given Student is in more than one of this Instructor’s Courses?
   boolean dejavu(Student target) {
     int coursesTaken = new MultipleCourses(this.courses, target).apply(null);
+
     return coursesTaken > 1;
     // Determines if the number of courses taken with THIS instructor
     // is greater than 1.
@@ -66,8 +66,7 @@ class Student {
     return this.name.equals(target.name) && this.id == target.id;
   }
 
-  // Determines if the given student (target) is in any of the same courses as
-  // THIS one
+  // Determines if the given student is in any of the same courses as THIS one
   boolean classmates(Student target) {
     return new InCourses(this.courses).apply(target);
   }
@@ -173,7 +172,7 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
     this.profsCourses = profsCourses;
     this.target = target;
   }
-
+  
   // Dispatches to either forMt or forCons depending on whether the
   // list of courses is empty or not empty.
   public Integer apply(Course arg) {
@@ -194,7 +193,6 @@ class MultipleCourses implements IListVisitor<Course, Integer> {
       return new MultipleCourses(arg.rest, this.target).apply(arg.first);
     }
   }
-
 }
 
 // An interface representing a general list.
@@ -275,7 +273,7 @@ class ExamplesCourses {
               new ConsList<Course>(this.Cyber, new ConsList<Course>(this.CS3700,
                   new ConsList<Course>(this.CS3500, new MtList<Course>()))))));
 
-  void testingEnroll(Tester t) {
+  void testEnroll(Tester t) {
     reset();
     t.checkExpect(this.DWang.courses, new MtList<Course>());
     this.DWang.enroll(Linear);
@@ -291,7 +289,7 @@ class ExamplesCourses {
         new ConsList<Course>(CS2500, new ConsList<Course>(CS2510, new MtList<Course>())));
   }
 
-  boolean testingSameStudent(Tester t) {
+  boolean testSameStudent(Tester t) {
     reset();
     return t.checkExpect(this.Preston.sameStudent(this.DWang), false)
         && t.checkExpect(this.Preston.sameStudent(this.SR), false)
@@ -303,7 +301,7 @@ class ExamplesCourses {
         && t.checkExpect(this.LiAnn.sameStudent(this.LiAnn), true);
   }
 
-  void testingClassmates(Tester t) {
+  void testClassmates(Tester t) {
     reset();
     t.checkExpect(this.Preston.classmates(this.Ethan), false);
     this.Preston.enroll(this.Cyber);
@@ -328,7 +326,7 @@ class ExamplesCourses {
     t.checkExpect(this.LiAnn.classmates(this.Ethan), false);
   }
 
-  void testingInThisCourse(Tester t) {
+  void testInThisCourse(Tester t) {
     reset();
 
     t.checkExpect(this.CS2500.inThisCourse(this.DWang), false);
@@ -351,7 +349,7 @@ class ExamplesCourses {
   }
 
   // tests dejavu
-  void testingDejavuMethod(Tester t) {
+  void testDejavu(Tester t) {
     reset();
     this.DWang.enroll(this.Linear); // taught by moses.
     this.DWang.enroll(this.CS3700); // taught by moses.
@@ -365,5 +363,27 @@ class ExamplesCourses {
     t.checkExpect(this.CyberProf.dejavu(this.Preston), false);
     this.Preston.enroll(this.Cyber2);
     t.checkExpect(this.CyberProf.dejavu(this.Preston), true);
+  }
+
+  void testApply(Tester t) {
+    reset();
+    this.DWang.enroll(this.Linear); // taught by moses.
+    this.DWang.enroll(this.CS3700); // taught by moses.
+    t.checkExpect(new MultipleCourses(this.Moses.courses, this.DWang).apply(null), 2);
+    t.checkExpect(new MultipleCourses(this.Moses.courses, this.SR).apply(null), 0);
+  }
+
+  void testForMt(Tester t) {
+    reset();
+    t.checkExpect(new MultipleCourses(new MtList<Course>(), this.DWang).forMt(new MtList<Course>()),
+        0);
+  }
+
+  void testForCons(Tester t) {
+    reset();
+    this.DWang.enroll(this.Linear); // taught by moses.
+    this.DWang.enroll(this.CS3700); // taught by moses.
+    t.checkExpect(new MultipleCourses(this.Moses.courses, this.DWang)
+        .forCons((ConsList<Course>) this.Moses.courses), 2);
   }
 }
